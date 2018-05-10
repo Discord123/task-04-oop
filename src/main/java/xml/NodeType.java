@@ -1,0 +1,5 @@
+package xml;
+
+public enum NodeType {
+    ELEMENT_NODE, ATTRIBUTE_NODE, START_NODE, EMPTY_NODE, END_NODE, FILL_NODE
+}
