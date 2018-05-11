@@ -14,6 +14,10 @@ public class NodeList {
         nodeList.addAll(nodes);
     }
 
+    public void addNode(Node node) {
+        nodeList.add(node);
+    }
+
     public Node item(int position) {
         if (position > nodeList.size()-1){
             return null;

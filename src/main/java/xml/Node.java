@@ -1,5 +1,7 @@
 package xml;
 
+import main.Main;
+
 public class Node {
 
     private String name;
@@ -8,6 +10,7 @@ public class Node {
     private String attribute;
     private long startPosition;
     private long endPosition;
+    private long nextLinePosition;
 
     public Node() {
     }
@@ -60,6 +63,18 @@ public class Node {
         this.endPosition = endPosition;
     }
 
+    public long getNextLinePosition() {
+        return nextLinePosition;
+    }
+
+    public void setNextLinePosition(long nextLinePosition) {
+        this.nextLinePosition = nextLinePosition;
+    }
+
+    public NodeList getChildList(){
+        return null;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -69,6 +84,7 @@ public class Node {
 
         if (startPosition != node.startPosition) return false;
         if (endPosition != node.endPosition) return false;
+        if (nextLinePosition != node.nextLinePosition) return false;
         if (!name.equals(node.name)) return false;
         if (!startTag.equals(node.startTag)) return false;
         if (!endTag.equals(node.endTag)) return false;
@@ -83,6 +99,7 @@ public class Node {
         result = 31 * result + attribute.hashCode();
         result = 31 * result + (int) (startPosition ^ (startPosition >>> 32));
         result = 31 * result + (int) (endPosition ^ (endPosition >>> 32));
+        result = 31 * result + (int) (nextLinePosition ^ (nextLinePosition >>> 32));
         return result;
     }
 
@@ -95,6 +112,7 @@ public class Node {
         sb.append(", attribute='").append(attribute).append('\'');
         sb.append(", startPosition=").append(startPosition);
         sb.append(", endPosition=").append(endPosition);
+        sb.append(", nextLinePosition=").append(nextLinePosition);
         sb.append('}');
         return sb.toString();
     }
