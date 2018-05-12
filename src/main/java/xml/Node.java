@@ -8,6 +8,8 @@ public class Node {
     private String startTag;
     private String endTag;
     private String attribute;
+    private NodeType nodeType;
+    private String textContent;
     private long startPosition;
     private long endPosition;
     private long nextLinePosition;
@@ -71,6 +73,22 @@ public class Node {
         this.nextLinePosition = nextLinePosition;
     }
 
+    public NodeType getNodeType() {
+        return nodeType;
+    }
+
+    public void setNodeType(NodeType nodeType) {
+        this.nodeType = nodeType;
+    }
+
+    public String getTextContent() {
+        return textContent;
+    }
+
+    public void setTextContent(String textContent) {
+        this.textContent = textContent;
+    }
+
     public NodeList getChildList(){
         return null;
     }
@@ -88,7 +106,9 @@ public class Node {
         if (!name.equals(node.name)) return false;
         if (!startTag.equals(node.startTag)) return false;
         if (!endTag.equals(node.endTag)) return false;
-        return attribute.equals(node.attribute);
+        if (!attribute.equals(node.attribute)) return false;
+        if (nodeType != node.nodeType) return false;
+        return textContent.equals(node.textContent);
     }
 
     @Override
@@ -97,6 +117,8 @@ public class Node {
         result = 31 * result + startTag.hashCode();
         result = 31 * result + endTag.hashCode();
         result = 31 * result + attribute.hashCode();
+        result = 31 * result + nodeType.hashCode();
+        result = 31 * result + textContent.hashCode();
         result = 31 * result + (int) (startPosition ^ (startPosition >>> 32));
         result = 31 * result + (int) (endPosition ^ (endPosition >>> 32));
         result = 31 * result + (int) (nextLinePosition ^ (nextLinePosition >>> 32));
@@ -110,6 +132,8 @@ public class Node {
         sb.append(", startTag='").append(startTag).append('\'');
         sb.append(", endTag='").append(endTag).append('\'');
         sb.append(", attribute='").append(attribute).append('\'');
+        sb.append(", nodeType=").append(nodeType);
+        sb.append(", textContent='").append(textContent).append('\'');
         sb.append(", startPosition=").append(startPosition);
         sb.append(", endPosition=").append(endPosition);
         sb.append(", nextLinePosition=").append(nextLinePosition);

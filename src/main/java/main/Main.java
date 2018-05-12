@@ -16,25 +16,28 @@ import java.util.regex.Pattern;
 public class Main {
     public static void main(String[] args) throws IOException {
 
-        String breakfastMenu= "breakfastMenu.xml";
+        String breakfastMenu = "breakfastMenu.xml";
         String nodes = "nodes.xml";
         URL filePath = XMLDaoFactory.class.getClassLoader().getResource(breakfastMenu);
 
-        RandomAccessFile randomAccessFile = new RandomAccessFile(filePath.getFile(),"r");
+        RandomAccessFile randomAccessFile = new RandomAccessFile(filePath.getFile(), "r");
 
         Node document = firstNodeCreator(randomAccessFile);
 
         NodeList nodeList = getChildList(document, randomAccessFile);
-
         for (int i = 0; i < nodeList.size(); i++) {
-            System.out.println(nodeList.item(i));
+            Node node = nodeList.item(i);
+            System.out.println(node);
+            System.out.println("=======");
+            if (node.getNodeType() != NodeType.TEXT_NODE || node.getNodeType() != NodeType.FILL_NODE ) {
+                NodeList nodeList1 = getChildList(node,randomAccessFile);
+                for (int j = 0; j < nodeList1.size(); j++) {
+                    Node node1 = nodeList1.item(j);
+                    System.out.println(node1);
+                }
+                System.out.println("---------------------------------");
+            }
         }
-
-
-        Node node = nodeList.item(0);
-        System.out.println(node);
-        NodeList nodeList1 = node.getChildList();
-        System.out.println(nodeList1);
 
     }
 
@@ -48,7 +51,7 @@ public class Main {
             childNode = recursiveNodeCreate(nodeStartPosition, nodeEndPosition, randomAccessFile);
             nodeStartPosition = childNode.getEndPosition();
             nodeList.addNode(childNode);
-            if (childNode.getNextLinePosition() == nodeEndPosition){
+            if (childNode.getNextLinePosition() == nodeEndPosition) {
                 break;
             }
         }
@@ -59,38 +62,53 @@ public class Main {
     public static Node recursiveNodeCreate(long nodeStartPosition, long nodeEndPosition,
                                            RandomAccessFile randomAccessFile) throws IOException {
 
-        if(nodeStartPosition >= nodeEndPosition){
+        if (nodeStartPosition >= nodeEndPosition) {
             return null;
         }
 
-        String name;
-        String startTag;
-        String endTag;
-        String attribute;
-        long startPosition;
+        String name = "";
+        String startTag = "";
+        String endTag = "";
+        String attribute = "";
+        NodeType nodeType;
+        String textContent = "";
+        long startPosition = 0;
         long endPosition = 0;
         long nextLinePosition;
 
         randomAccessFile.seek(nodeStartPosition);
+
         startTag = randomAccessFile.readLine();
+
+        nodeType = checkNodeType(startTag);
 
         startPosition = randomAccessFile.getFilePointer();
 
         startTag = startTag.substring(startTag.indexOf("<"));
 
-        endTag = startTag.replace("<","</").split(" ")[0]+">";
-        name = endTag.replace("</","").replace(">","");
-        attribute = startTag.replace(name,"").replace("<","").replace(">","");
+        endTag = startTag.replace("<", "</").split(" ")[0];
+        if (!endTag.contains(">")) {
+            endTag = endTag + ">";
+        }
+        name = endTag.replace("</", "").replace(">", "");
+        attribute = startTag.replace(name, "").replace("<", "").replace(">", "");
 
-        String s;
-        while ((s = randomAccessFile.readLine()) != null) {
-            if (randomAccessFile.getFilePointer() < nodeEndPosition) {
-                if (s.replaceAll(" ","").equals(endTag)){
-                    endPosition = randomAccessFile.getFilePointer();
-                    break;
+        if (nodeType == NodeType.START_NODE) {
+            String s;
+            while ((s = randomAccessFile.readLine()) != null) {
+                if (randomAccessFile.getFilePointer() < nodeEndPosition) {
+                    if (s.replaceAll(" ", "").equals(endTag)) {
+                        endPosition = randomAccessFile.getFilePointer();
+                        break;
+                    }
                 }
             }
         }
+
+        if (nodeType == NodeType.FILL_NODE  || nodeType == NodeType.TEXT_NODE) {
+            endPosition = startPosition;
+        }
+
 
         randomAccessFile.readLine();
         nextLinePosition = randomAccessFile.getFilePointer();
@@ -100,6 +118,8 @@ public class Main {
         childNode.setStartTag(startTag);
         childNode.setEndTag(endTag);
         childNode.setAttribute(attribute);
+        childNode.setNodeType(nodeType);
+        childNode.setTextContent(textContent);
         childNode.setStartPosition(startPosition);
         childNode.setEndPosition(endPosition);
         childNode.setNextLinePosition(nextLinePosition);
@@ -118,19 +138,19 @@ public class Main {
 
         String firstLine = randomAccessFile.readLine();
 
-        if (checkNodeType(firstLine) == NodeType.INFORMATION_NODE){
+        if (checkNodeType(firstLine) == NodeType.INFORMATION_NODE) {
             firstLine = randomAccessFile.readLine();
         }
 
         startPosition = randomAccessFile.getFilePointer();
-        name = firstLine.replaceAll("<","").replaceAll(">","");
+        name = firstLine.replaceAll("<", "").replaceAll(">", "");
         startTag = firstLine;
 
-        String closeTagName = firstLine.replaceAll("<","</");
+        String closeTagName = firstLine.replaceAll("<", "</");
 
         String s;
         while ((s = randomAccessFile.readLine()) != null) {
-            if(s.replaceAll(" ","").equals(closeTagName.replaceAll(" ",""))){
+            if (s.replaceAll(" ", "").equals(closeTagName.replaceAll(" ", ""))) {
                 endPosition = randomAccessFile.getFilePointer();
                 endTag = s;
             }
@@ -145,17 +165,13 @@ public class Main {
         return node;
     }
 
-    public static Node nodeBuilder(NodeType nodeType){
-
+    public static Node nodeBuilder(NodeType nodeType) {
 
 
         return null;
     }
 
     public static NodeType checkNodeType(String s) {
-
-        Pattern patternAtr = Pattern.compile("\\s*<.+>");
-        Matcher matcherAtr = patternAtr.matcher(s);
 
         Pattern patternEnd = Pattern.compile("\\s*</.+>");
         Matcher matcherEnd = patternEnd.matcher(s);
@@ -169,22 +185,22 @@ public class Main {
         Pattern patternFill = Pattern.compile("\\s*<.+>.*</.+>");
         Matcher matcherFill = patternFill.matcher(s);
 
-        if(s.contains("<?") && s.contains("?>")) {
+        if (s.contains("<?") && s.contains("?>")) {
             return NodeType.INFORMATION_NODE;
         }
-        if(matcherAtr.lookingAt() && s.contains("\"")){
-            return NodeType.ATTRIBUTE_NODE;
-        }
-        if(matcherEnd.lookingAt()){
+        if (matcherEnd.lookingAt()) {
             return NodeType.END_NODE;
         }
-        if(matcherEmpty.lookingAt()){
+        if (matcherEmpty.lookingAt()) {
             return NodeType.EMPTY_NODE;
         }
-        if(matcherFill.lookingAt()){
+        if (matcherFill.lookingAt()) {
             return NodeType.FILL_NODE;
         }
-        if(matcherStart.lookingAt()){
+        if (!s.contains("<") && !s.contains(">")) {
+            return NodeType.TEXT_NODE;
+        }
+        if (matcherStart.lookingAt()) {
             return NodeType.START_NODE;
         }
 
