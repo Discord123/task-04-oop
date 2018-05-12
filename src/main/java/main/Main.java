@@ -93,10 +93,14 @@ public class Main {
         name = endTag.replace("</", "").replace(">", "");
         attribute = startTag.replace(name, "").replace("<", "").replace(">", "");
 
+        StringBuilder stringBuilder = new StringBuilder("");
         if (nodeType == NodeType.START_NODE) {
             String s;
             while ((s = randomAccessFile.readLine()) != null) {
                 if (randomAccessFile.getFilePointer() < nodeEndPosition) {
+                    if (!s.contains("<") && !s.contains(">")) {
+                        stringBuilder.append(s);
+                    }
                     if (s.replaceAll(" ", "").equals(endTag)) {
                         endPosition = randomAccessFile.getFilePointer();
                         break;
@@ -105,8 +109,11 @@ public class Main {
             }
         }
 
-        if (nodeType == NodeType.FILL_NODE  || nodeType == NodeType.TEXT_NODE) {
+        textContent = stringBuilder.toString();
+
+        if (nodeType == NodeType.FILL_NODE) {
             endPosition = startPosition;
+            textContent = startTag.substring(startTag.indexOf(">")+1).split("</")[0];
         }
 
 
@@ -173,6 +180,9 @@ public class Main {
 
     public static NodeType checkNodeType(String s) {
 
+        Pattern patternInf = Pattern.compile("^<\\?.*\\?>$");
+        Matcher matcherInf = patternInf.matcher(s);
+
         Pattern patternEnd = Pattern.compile("\\s*</.+>");
         Matcher matcherEnd = patternEnd.matcher(s);
 
@@ -185,7 +195,7 @@ public class Main {
         Pattern patternFill = Pattern.compile("\\s*<.+>.*</.+>");
         Matcher matcherFill = patternFill.matcher(s);
 
-        if (s.contains("<?") && s.contains("?>")) {
+        if (matcherInf.lookingAt()) {
             return NodeType.INFORMATION_NODE;
         }
         if (matcherEnd.lookingAt()) {

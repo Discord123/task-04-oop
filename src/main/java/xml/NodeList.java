@@ -19,7 +19,7 @@ public class NodeList {
     }
 
     public Node item(int position) {
-        if (position > nodeList.size()-1){
+        if (position > nodeList.size()-1 || position < 0){
             return null;
         }
         return nodeList.get(position);
