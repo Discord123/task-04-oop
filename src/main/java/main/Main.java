@@ -18,6 +18,7 @@ public class Main {
 
         String breakfastMenu = "breakfastMenu.xml";
         String nodes = "nodes.xml";
+        String books = "books.xml";
         URL filePath = XMLDaoFactory.class.getClassLoader().getResource(breakfastMenu);
 
         RandomAccessFile randomAccessFile = new RandomAccessFile(filePath.getFile(), "r");
@@ -29,8 +30,8 @@ public class Main {
             Node node = nodeList.item(i);
             System.out.println(node);
             System.out.println("=======");
-            if (node.getNodeType() != NodeType.TEXT_NODE || node.getNodeType() != NodeType.FILL_NODE ) {
-                NodeList nodeList1 = getChildList(node,randomAccessFile);
+            if (node.getNodeType() != NodeType.TEXT_NODE || node.getNodeType() != NodeType.FILL_NODE) {
+                NodeList nodeList1 = getChildList(node, randomAccessFile);
                 for (int j = 0; j < nodeList1.size(); j++) {
                     Node node1 = nodeList1.item(j);
                     System.out.println(node1);
@@ -75,14 +76,24 @@ public class Main {
         long startPosition = 0;
         long endPosition = 0;
         long nextLinePosition;
+        String nextTagLine = "";
 
         randomAccessFile.seek(nodeStartPosition);
 
         startTag = randomAccessFile.readLine();
+        startPosition = randomAccessFile.getFilePointer();
+        nextTagLine = randomAccessFile.readLine();
+
+        randomAccessFile.seek(startPosition);
+
+        StringBuilder textContentBuilder = new StringBuilder("");
+
+        if (checkNodeType(startTag) == NodeType.START_NODE) {
+            textContentBuilder.append(startTag.substring(startTag.indexOf(">")+1));
+            startTag = startTag.substring(0,startTag.indexOf(">")+1);
+        }
 
         nodeType = checkNodeType(startTag);
-
-        startPosition = randomAccessFile.getFilePointer();
 
         startTag = startTag.substring(startTag.indexOf("<"));
 
@@ -90,16 +101,13 @@ public class Main {
         if (!endTag.contains(">")) {
             endTag = endTag + ">";
         }
-        name = endTag.replace("</", "").replace(">", "");
-        attribute = startTag.replace(name, "").replace("<", "").replace(">", "");
 
-        StringBuilder stringBuilder = new StringBuilder("");
         if (nodeType == NodeType.START_NODE) {
             String s;
             while ((s = randomAccessFile.readLine()) != null) {
                 if (randomAccessFile.getFilePointer() < nodeEndPosition) {
-                    if (!s.contains("<") && !s.contains(">")) {
-                        stringBuilder.append(s);
+                    if (checkNodeType(s) == NodeType.TEXT_NODE && checkNodeType(nextTagLine) == NodeType.TEXT_NODE) {
+                        textContentBuilder.append(s);
                     }
                     if (s.replaceAll(" ", "").equals(endTag)) {
                         endPosition = randomAccessFile.getFilePointer();
@@ -109,14 +117,15 @@ public class Main {
             }
         }
 
-        textContent = stringBuilder.toString();
+        textContent = textContentBuilder.toString();
 
         if (nodeType == NodeType.FILL_NODE) {
             endPosition = startPosition;
-            textContent = startTag.substring(startTag.indexOf(">")+1).split("</")[0];
+            textContent = startTag.substring(startTag.indexOf(">") + 1).split("</")[0];
         }
 
-
+        name = endTag.replace("</", "").replace(">", "");
+        attribute = startTag.replace(name, "").replace("<", "").replace(">", "");
         randomAccessFile.readLine();
         nextLinePosition = randomAccessFile.getFilePointer();
 
@@ -189,7 +198,7 @@ public class Main {
         Pattern patternEmpty = Pattern.compile("\\s+<.+/>");
         Matcher matcherEmpty = patternEmpty.matcher(s);
 
-        Pattern patternStart = Pattern.compile("\\s*<.+>");
+        Pattern patternStart = Pattern.compile("\\s*<.+>\\s*");
         Matcher matcherStart = patternStart.matcher(s);
 
         Pattern patternFill = Pattern.compile("\\s*<.+>.*</.+>");
