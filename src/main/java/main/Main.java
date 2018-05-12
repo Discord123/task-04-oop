@@ -109,7 +109,8 @@ public class Main {
                     if (checkNodeType(s) == NodeType.TEXT_NODE && checkNodeType(nextTagLine) == NodeType.TEXT_NODE) {
                         textContentBuilder.append(s);
                     }
-                    if (s.replaceAll(" ", "").equals(endTag)) {
+                    if (s.replaceAll(" ", "").contains(endTag)) {
+                        textContentBuilder.append(s.replace(endTag,""));
                         endPosition = randomAccessFile.getFilePointer();
                         break;
                     }
