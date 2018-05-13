@@ -34,6 +34,6 @@ public class XMLDAOUtil {
             return NodeType.START_NODE;
         }
 
-        return null;
+        return NodeType.START_NODE;
     }
 }
