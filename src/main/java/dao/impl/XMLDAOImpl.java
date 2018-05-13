@@ -78,6 +78,7 @@ public class XMLDAOImpl implements XMLDAO {
             return null;
         }
 
+        Node childNode = new Node();
         String name = "";
         String startTag = "";
         String endTag = "";
@@ -102,16 +103,18 @@ public class XMLDAOImpl implements XMLDAO {
         nodeType = XMLDAOUtil.checkNodeType(startTag);
 
         if (nodeType == NodeType.START_NODE) {
-            textContentBuilder.append(startTag.substring(startTag.indexOf(">")+1));
+            textContentBuilder.append(startTag.substring(startTag.indexOf(">")+1).trim());
             startTag = startTag.substring(0,startTag.indexOf(">")+1);
         }
 
         startTag = startTag.substring(startTag.indexOf("<"));
-
+        attribute = startTag.replace(name, "").replace("<", "").replace(">", "");
         endTag = startTag.replace("<", "</").split(" ")[0];
+        name = endTag.split(">")[0].replace("</", "");
         if (!endTag.contains(">")) {
             endTag = endTag + ">";
         }
+        endTag = endTag.substring(0,endTag.indexOf(">")+1);
 
         if (nodeType == NodeType.START_NODE) {
             String s;
@@ -119,10 +122,10 @@ public class XMLDAOImpl implements XMLDAO {
                 if (randomAccessFile.getFilePointer() < nodeEndPosition) {
                     if (XMLDAOUtil.checkNodeType(s) == NodeType.TEXT_NODE &&
                             XMLDAOUtil.checkNodeType(nextTagLine) == NodeType.TEXT_NODE) {
-                        textContentBuilder.append(s);
+                        textContentBuilder.append(s.trim());
                     }
                     if (s.replaceAll(" ", "").contains(endTag)) {
-                        textContentBuilder.append(s.replace(endTag,""));
+                        textContentBuilder.append(" " + (s.replace(endTag,"").trim()));
                         endPosition = randomAccessFile.getFilePointer();
                         break;
                     }
@@ -135,14 +138,13 @@ public class XMLDAOImpl implements XMLDAO {
         if (nodeType == NodeType.FILL_NODE) {
             endPosition = startPosition;
             textContent = startTag.substring(startTag.indexOf(">") + 1).split("</")[0];
+            attribute = "";
         }
 
-        name = endTag.replace("</", "").replace(">", "");
-        attribute = startTag.replace(name, "").replace("<", "").replace(">", "");
+        startTag = startTag.substring(0, startTag.indexOf(">")+1);
         randomAccessFile.readLine();
         nextLinePosition = randomAccessFile.getFilePointer();
 
-        Node childNode = new Node();
         childNode.setName(name);
         childNode.setStartTag(startTag);
         childNode.setEndTag(endTag);

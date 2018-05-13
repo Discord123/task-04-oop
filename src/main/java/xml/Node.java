@@ -163,9 +163,6 @@ public class Node {
         sb.append(", attribute='").append(attribute).append('\'');
         sb.append(", nodeType=").append(nodeType);
         sb.append(", textContent='").append(textContent).append('\'');
-        sb.append(", startPosition=").append(startPosition);
-        sb.append(", endPosition=").append(endPosition);
-        sb.append(", nextLinePosition=").append(nextLinePosition);
         sb.append('}');
         return sb.toString();
     }
