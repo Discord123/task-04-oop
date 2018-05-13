@@ -1,9 +1,17 @@
 package xml;
 
-import main.Main;
+import dao.XMLDAO;
+import dao.XMLDAOFactory;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.net.URL;
 
 public class Node {
 
+    private static final XMLDAOFactory XMLDAO_FACTORY = XMLDAOFactory.getInstance();
+    private static final XMLDAO XMLDAO = XMLDAO_FACTORY.getXmlDAO();
     private String name;
     private String startTag;
     private String endTag;
@@ -13,8 +21,19 @@ public class Node {
     private long startPosition;
     private long endPosition;
     private long nextLinePosition;
+    private RandomAccessFile randomAccessFile;
+    private URL filePath;
+    private NodeList nodeList;
 
     public Node() {
+    }
+
+    public void setFilePath(URL filePath) {
+        this.filePath = filePath;
+    }
+
+    public URL getFilePath() {
+        return filePath;
     }
 
     public String getName() {
@@ -89,8 +108,11 @@ public class Node {
         this.textContent = textContent;
     }
 
-    public NodeList getChildList(){
-        return null;
+    public NodeList getChildList() throws IOException {
+        randomAccessFile = new RandomAccessFile(filePath.getFile(),"r");
+        nodeList = XMLDAO.getChildList(this, randomAccessFile);
+        nodeList.setFilePath(filePath);
+        return nodeList;
     }
 
     @Override
