@@ -1,6 +1,7 @@
 package dao.impl;
 
 import dao.XMLDAO;
+import dao.util.XMLDAOUtil;
 import xml.Document;
 import xml.Node;
 import xml.NodeList;
@@ -8,8 +9,6 @@ import xml.NodeType;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class XMLDAOImpl implements XMLDAO {
 
@@ -45,7 +44,7 @@ public class XMLDAOImpl implements XMLDAO {
 
         String firstLine = randomAccessFile.readLine();
 
-        if (checkNodeType(firstLine) == NodeType.INFORMATION_NODE) {
+        if (XMLDAOUtil.checkNodeType(firstLine) == NodeType.INFORMATION_NODE) {
             information = firstLine;
             firstLine = randomAccessFile.readLine();
         }
@@ -100,12 +99,12 @@ public class XMLDAOImpl implements XMLDAO {
 
         StringBuilder textContentBuilder = new StringBuilder("");
 
-        if (checkNodeType(startTag) == NodeType.START_NODE) {
+        nodeType = XMLDAOUtil.checkNodeType(startTag);
+
+        if (nodeType == NodeType.START_NODE) {
             textContentBuilder.append(startTag.substring(startTag.indexOf(">")+1));
             startTag = startTag.substring(0,startTag.indexOf(">")+1);
         }
-
-        nodeType = checkNodeType(startTag);
 
         startTag = startTag.substring(startTag.indexOf("<"));
 
@@ -118,7 +117,8 @@ public class XMLDAOImpl implements XMLDAO {
             String s;
             while ((s = randomAccessFile.readLine()) != null) {
                 if (randomAccessFile.getFilePointer() < nodeEndPosition) {
-                    if (checkNodeType(s) == NodeType.TEXT_NODE && checkNodeType(nextTagLine) == NodeType.TEXT_NODE) {
+                    if (XMLDAOUtil.checkNodeType(s) == NodeType.TEXT_NODE &&
+                            XMLDAOUtil.checkNodeType(nextTagLine) == NodeType.TEXT_NODE) {
                         textContentBuilder.append(s);
                     }
                     if (s.replaceAll(" ", "").contains(endTag)) {
@@ -154,44 +154,5 @@ public class XMLDAOImpl implements XMLDAO {
         childNode.setNextLinePosition(nextLinePosition);
 
         return childNode;
-    }
-
-    private NodeType checkNodeType(String s) {
-
-        Pattern patternInf = Pattern.compile("^<\\?.*\\?>$");
-        Matcher matcherInf = patternInf.matcher(s);
-
-        Pattern patternEnd = Pattern.compile("\\s*</.+>");
-        Matcher matcherEnd = patternEnd.matcher(s);
-
-        Pattern patternEmpty = Pattern.compile("\\s+<.+/>");
-        Matcher matcherEmpty = patternEmpty.matcher(s);
-
-        Pattern patternStart = Pattern.compile("\\s*<.+>\\s*");
-        Matcher matcherStart = patternStart.matcher(s);
-
-        Pattern patternFill = Pattern.compile("\\s*<.+>.*</.+>");
-        Matcher matcherFill = patternFill.matcher(s);
-
-        if (matcherInf.lookingAt()) {
-            return NodeType.INFORMATION_NODE;
-        }
-        if (matcherEnd.lookingAt()) {
-            return NodeType.END_NODE;
-        }
-        if (matcherEmpty.lookingAt()) {
-            return NodeType.EMPTY_NODE;
-        }
-        if (matcherFill.lookingAt()) {
-            return NodeType.FILL_NODE;
-        }
-        if (!s.contains("<") && !s.contains(">")) {
-            return NodeType.TEXT_NODE;
-        }
-        if (matcherStart.lookingAt()) {
-            return NodeType.START_NODE;
-        }
-
-        return null;
     }
 }
