@@ -3,9 +3,9 @@ package dao;
 import xml.*;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.net.URL;
 
 public interface XMLDAO {
-    NodeList getChildList(Node node, RandomAccessFile randomAccessFile) throws IOException;
-    Document firstNodeCreator(RandomAccessFile randomAccessFile) throws IOException;
+    NodeList getChildList(Node node, URL filePath) throws IOException;
+    Document firstNodeCreator(URL filePath) throws IOException;
 }

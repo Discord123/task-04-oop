@@ -8,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.net.URL;
 
 public class Node {
@@ -25,7 +24,6 @@ public class Node {
     private long startPosition;
     private long endPosition;
     private long nextLinePosition;
-    private RandomAccessFile randomAccessFile;
     private URL filePath;
     private NodeList nodeList;
 
@@ -34,10 +32,8 @@ public class Node {
 
     public NodeList getChildList() {
         try {
-            randomAccessFile = new RandomAccessFile(filePath.getFile(), "r");
-            nodeList = XMLDAO.getChildList(this, randomAccessFile);
+            nodeList = XMLDAO.getChildList(this, filePath);
             nodeList.setFilePath(filePath);
-            randomAccessFile.close();
         } catch (FileNotFoundException e) {
             LOGGER.log(Level.FATAL,"XML File was deleted.");
         } catch (IOException e) {

@@ -17,8 +17,8 @@ public class DocumentBuilder {
     private static final ClassLoader CLASS_LOADER = XMLDAOFactory.class.getClassLoader();
     private static final XMLDAOFactory XMLDAO_FACTORY = XMLDAOFactory.getInstance();
     private static final XMLDAO XMLDAO = XMLDAO_FACTORY.getXmlDAO();
-    private static RandomAccessFile randomAccessFile;
     private static Document document;
+    private URL filePath;
 
     private DocumentBuilder() {
     }
@@ -28,13 +28,11 @@ public class DocumentBuilder {
     }
 
     public Document getDocument(String path) {
-        URL filePath = CLASS_LOADER.getResource(path);
+        filePath = CLASS_LOADER.getResource(path);
 
         try {
-            randomAccessFile = new RandomAccessFile(filePath.getFile(), "r");
-            document = XMLDAO.firstNodeCreator(randomAccessFile);
+            document = XMLDAO.firstNodeCreator(filePath);
             document.setFilePath(filePath);
-            randomAccessFile.close();
         } catch (FileNotFoundException e) {
             LOGGER.log(Level.FATAL, "XML File was deleted.");
         } catch (IOException e) {

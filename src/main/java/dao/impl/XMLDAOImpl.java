@@ -9,11 +9,15 @@ import xml.NodeType;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.net.URL;
 
 public class XMLDAOImpl implements XMLDAO {
+    private RandomAccessFile randomAccessFile;
 
     @Override
-    public NodeList getChildList(Node node, RandomAccessFile randomAccessFile) throws IOException {
+    public NodeList getChildList(Node node, URL filePath) throws IOException {
+
+        randomAccessFile = new RandomAccessFile(filePath.getFile(),"r");
         NodeList nodeList = new NodeList();
         long nodeStartPosition = node.getStartPosition();
         long nodeEndPosition = node.getEndPosition();
@@ -27,13 +31,15 @@ public class XMLDAOImpl implements XMLDAO {
                 break;
             }
         }
+        randomAccessFile.close();
 
         return nodeList;
     }
 
     @Override
-    public Document firstNodeCreator(RandomAccessFile randomAccessFile) throws IOException {
+    public Document firstNodeCreator(URL filePath) throws IOException {
 
+        randomAccessFile = new RandomAccessFile(filePath.getFile(),"r");
         Node node = new Node();
         String name;
         String startTag;

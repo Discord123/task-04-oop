@@ -8,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.net.URL;
 
 public class Document {
@@ -17,7 +16,6 @@ public class Document {
     private static final XMLDAO XMLDAO = XMLDAO_FACTORY.getXmlDAO();
     private String information;
     private Node firstNode;
-    private RandomAccessFile randomAccessFile;
     private URL filePath;
     private NodeList nodeList;
 
@@ -34,10 +32,8 @@ public class Document {
 
     public NodeList getChildNodes() throws IOException {
         try {
-            randomAccessFile = new RandomAccessFile(filePath.getFile(), "r");
-            nodeList = XMLDAO.getChildList(firstNode, randomAccessFile);
+            nodeList = XMLDAO.getChildList(firstNode, filePath);
             nodeList.setFilePath(filePath);
-            randomAccessFile.close();
         } catch (FileNotFoundException e) {
             LOGGER.log(Level.FATAL, "XML File was deleted.");
         } catch (IOException e) {
@@ -57,17 +53,16 @@ public class Document {
         if (information != null ? !information.equals(document.information) : document.information != null)
             return false;
         if (firstNode != null ? !firstNode.equals(document.firstNode) : document.firstNode != null) return false;
-        if (randomAccessFile != null ? !randomAccessFile.equals(document.randomAccessFile) : document.randomAccessFile != null)
-            return false;
-        return filePath != null ? filePath.equals(document.filePath) : document.filePath == null;
+        if (filePath != null ? !filePath.equals(document.filePath) : document.filePath != null) return false;
+        return nodeList != null ? nodeList.equals(document.nodeList) : document.nodeList == null;
     }
 
     @Override
     public int hashCode() {
         int result = information != null ? information.hashCode() : 0;
         result = 31 * result + (firstNode != null ? firstNode.hashCode() : 0);
-        result = 31 * result + (randomAccessFile != null ? randomAccessFile.hashCode() : 0);
         result = 31 * result + (filePath != null ? filePath.hashCode() : 0);
+        result = 31 * result + (nodeList != null ? nodeList.hashCode() : 0);
         return result;
     }
 
@@ -76,7 +71,8 @@ public class Document {
         final StringBuilder sb = new StringBuilder("Document{");
         sb.append("information='").append(information).append('\'');
         sb.append(", firstNode=").append(firstNode);
-        sb.append(", randomAccessFile=").append(randomAccessFile);
+        sb.append(", filePath=").append(filePath);
+        sb.append(", nodeList=").append(nodeList);
         sb.append('}');
         return sb.toString();
     }
