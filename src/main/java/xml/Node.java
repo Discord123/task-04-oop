@@ -2,6 +2,9 @@ package xml;
 
 import dao.XMLDAO;
 import dao.XMLDAOFactory;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,6 +13,7 @@ import java.net.URL;
 
 public class Node {
 
+    private static final Logger LOGGER = LogManager.getLogger(Node.class);
     private static final XMLDAOFactory XMLDAO_FACTORY = XMLDAOFactory.getInstance();
     private static final XMLDAO XMLDAO = XMLDAO_FACTORY.getXmlDAO();
     private String name;
@@ -28,13 +32,23 @@ public class Node {
     public Node() {
     }
 
-    public void setFilePath(URL filePath) {
-        this.filePath = filePath;
+    public NodeList getChildList() {
+        try {
+            randomAccessFile = new RandomAccessFile(filePath.getFile(), "r");
+            nodeList = XMLDAO.getChildList(this, randomAccessFile);
+            nodeList.setFilePath(filePath);
+            randomAccessFile.close();
+        } catch (FileNotFoundException e) {
+            LOGGER.log(Level.FATAL,"XML File was deleted.");
+        } catch (IOException e) {
+            LOGGER.log(Level.FATAL,"IOException");
+        }
+        return nodeList;
     }
 
-    public URL getFilePath() {
-        return filePath;
-    }
+    public void setFilePath(URL filePath) { this.filePath = filePath; }
+
+    public URL getFilePath() { return filePath; }
 
     public String getName() {
         return name;
@@ -106,13 +120,6 @@ public class Node {
 
     public void setTextContent(String textContent) {
         this.textContent = textContent;
-    }
-
-    public NodeList getChildList() throws IOException {
-        randomAccessFile = new RandomAccessFile(filePath.getFile(),"r");
-        nodeList = XMLDAO.getChildList(this, randomAccessFile);
-        nodeList.setFilePath(filePath);
-        return nodeList;
     }
 
     @Override

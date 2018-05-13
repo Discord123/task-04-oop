@@ -2,13 +2,17 @@ package xml;
 
 import dao.XMLDAO;
 import dao.XMLDAOFactory;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.URL;
 
 public class Document {
-
+    private static final Logger LOGGER = LogManager.getLogger(Document.class);
     private static final XMLDAOFactory XMLDAO_FACTORY = XMLDAOFactory.getInstance();
     private static final XMLDAO XMLDAO = XMLDAO_FACTORY.getXmlDAO();
     private String information;
@@ -22,14 +26,24 @@ public class Document {
         this.firstNode = firstNode;
     }
 
+    public String getInformation() { return information; }
+
     public void setFilePath(URL filePath) {
         this.filePath = filePath;
     }
 
     public NodeList getChildNodes() throws IOException {
-        randomAccessFile = new RandomAccessFile(filePath.getFile(),"r");
-        nodeList = XMLDAO.getChildList(firstNode, randomAccessFile);
-        nodeList.setFilePath(filePath);
+        try {
+            randomAccessFile = new RandomAccessFile(filePath.getFile(), "r");
+            nodeList = XMLDAO.getChildList(firstNode, randomAccessFile);
+            nodeList.setFilePath(filePath);
+            randomAccessFile.close();
+        } catch (FileNotFoundException e) {
+            LOGGER.log(Level.FATAL, "XML File was deleted.");
+        } catch (IOException e) {
+            LOGGER.log(Level.FATAL, "IOException");
+        }
+
         return nodeList;
     }
 

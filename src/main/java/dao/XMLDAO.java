@@ -8,5 +8,4 @@ import java.io.RandomAccessFile;
 public interface XMLDAO {
     NodeList getChildList(Node node, RandomAccessFile randomAccessFile) throws IOException;
     Document firstNodeCreator(RandomAccessFile randomAccessFile) throws IOException;
-    NodeType checkNodeType(String s);
 }

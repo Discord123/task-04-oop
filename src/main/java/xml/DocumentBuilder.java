@@ -2,12 +2,17 @@ package xml;
 
 import dao.XMLDAO;
 import dao.XMLDAOFactory;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.URL;
 
 public class DocumentBuilder {
+    private static final Logger LOGGER = LogManager.getLogger(DocumentBuilder.class);
     private static final DocumentBuilder DOCUMENT_BUILDER = new DocumentBuilder();
     private static final ClassLoader CLASS_LOADER = XMLDAOFactory.class.getClassLoader();
     private static final XMLDAOFactory XMLDAO_FACTORY = XMLDAOFactory.getInstance();
@@ -22,12 +27,19 @@ public class DocumentBuilder {
         return DOCUMENT_BUILDER;
     }
 
-    public Document getDocument(String path) throws IOException {
+    public Document getDocument(String path) {
         URL filePath = CLASS_LOADER.getResource(path);
-        randomAccessFile = new RandomAccessFile(filePath.getFile(), "r");
-        document = XMLDAO.firstNodeCreator(randomAccessFile);
-        document.setFilePath(filePath);
-        randomAccessFile.close();
+
+        try {
+            randomAccessFile = new RandomAccessFile(filePath.getFile(), "r");
+            document = XMLDAO.firstNodeCreator(randomAccessFile);
+            document.setFilePath(filePath);
+            randomAccessFile.close();
+        } catch (FileNotFoundException e) {
+            LOGGER.log(Level.FATAL, "XML File was deleted.");
+        } catch (IOException e) {
+            LOGGER.log(Level.FATAL, "IOException");
+        }
 
         return document;
     }

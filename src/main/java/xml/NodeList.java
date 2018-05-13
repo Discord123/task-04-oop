@@ -34,6 +34,7 @@ public class NodeList {
         if(node.getFilePath() == null && filePath != null) {
             node.setFilePath(filePath);
         }
+
         return node;
     }
 

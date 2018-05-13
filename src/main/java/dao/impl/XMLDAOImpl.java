@@ -13,17 +13,6 @@ import java.util.regex.Pattern;
 
 public class XMLDAOImpl implements XMLDAO {
 
-    private static RandomAccessFile randomAccessFile;
-    private static Node node;
-
-    public static void setRandomAccessFile(RandomAccessFile randomAccessFile) {
-        XMLDAOImpl.randomAccessFile = randomAccessFile;
-    }
-
-    public static void setNode(Node node) {
-        XMLDAOImpl.node = node;
-    }
-
     @Override
     public NodeList getChildList(Node node, RandomAccessFile randomAccessFile) throws IOException {
         NodeList nodeList = new NodeList();
@@ -41,6 +30,47 @@ public class XMLDAOImpl implements XMLDAO {
         }
 
         return nodeList;
+    }
+
+    @Override
+    public Document firstNodeCreator(RandomAccessFile randomAccessFile) throws IOException {
+
+        Node node = new Node();
+        String name;
+        String startTag;
+        String endTag = "";
+        String information = "";
+        long startPosition;
+        long endPosition = 0;
+
+        String firstLine = randomAccessFile.readLine();
+
+        if (checkNodeType(firstLine) == NodeType.INFORMATION_NODE) {
+            information = firstLine;
+            firstLine = randomAccessFile.readLine();
+        }
+
+        startPosition = randomAccessFile.getFilePointer();
+        name = firstLine.replaceAll("<", "").replaceAll(">", "");
+        startTag = firstLine;
+
+        String closeTagName = firstLine.replaceAll("<", "</");
+
+        String s;
+        while ((s = randomAccessFile.readLine()) != null) {
+            if (s.replaceAll(" ", "").equals(closeTagName.replaceAll(" ", ""))) {
+                endPosition = randomAccessFile.getFilePointer();
+                endTag = s;
+            }
+        }
+
+        node.setName(name);
+        node.setStartTag(startTag);
+        node.setEndTag(endTag);
+        node.setStartPosition(startPosition);
+        node.setEndPosition(endPosition);
+
+        return new Document(information, node);
     }
 
     private Node recursiveNodeCreate(long nodeStartPosition, long nodeEndPosition,
@@ -126,49 +156,7 @@ public class XMLDAOImpl implements XMLDAO {
         return childNode;
     }
 
-    @Override
-    public Document firstNodeCreator(RandomAccessFile randomAccessFile) throws IOException {
-
-        Node node = new Node();
-        String name;
-        String startTag;
-        String endTag = "";
-        String information = "";
-        long startPosition;
-        long endPosition = 0;
-
-        String firstLine = randomAccessFile.readLine();
-
-        if (checkNodeType(firstLine) == NodeType.INFORMATION_NODE) {
-            information = firstLine;
-            firstLine = randomAccessFile.readLine();
-        }
-
-        startPosition = randomAccessFile.getFilePointer();
-        name = firstLine.replaceAll("<", "").replaceAll(">", "");
-        startTag = firstLine;
-
-        String closeTagName = firstLine.replaceAll("<", "</");
-
-        String s;
-        while ((s = randomAccessFile.readLine()) != null) {
-            if (s.replaceAll(" ", "").equals(closeTagName.replaceAll(" ", ""))) {
-                endPosition = randomAccessFile.getFilePointer();
-                endTag = s;
-            }
-        }
-
-        node.setName(name);
-        node.setStartTag(startTag);
-        node.setEndTag(endTag);
-        node.setStartPosition(startPosition);
-        node.setEndPosition(endPosition);
-
-        return new Document(information, node);
-    }
-
-    @Override
-    public NodeType checkNodeType(String s) {
+    private NodeType checkNodeType(String s) {
 
         Pattern patternInf = Pattern.compile("^<\\?.*\\?>$");
         Matcher matcherInf = patternInf.matcher(s);
