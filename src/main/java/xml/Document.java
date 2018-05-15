@@ -8,16 +8,23 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URL;
 
-public class Document {
+public class Document implements Serializable{
+
+    private static final long serialVersionUID = -3255677712128420511L;
     private static final Logger LOGGER = LogManager.getLogger(Document.class);
     private static final XMLDAOFactory XMLDAO_FACTORY = XMLDAOFactory.getInstance();
     private static final XMLDAO XMLDAO = XMLDAO_FACTORY.getXmlDAO();
+
     private String information;
     private Node firstNode;
     private URL filePath;
     private NodeList nodeList;
+
+    public Document() {
+    }
 
     public Document(String information, Node firstNode) {
         this.information = information;

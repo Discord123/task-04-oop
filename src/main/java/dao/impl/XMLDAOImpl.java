@@ -12,6 +12,13 @@ import java.io.RandomAccessFile;
 import java.net.URL;
 
 public class XMLDAOImpl implements XMLDAO {
+
+    private static final String LEFT_BRACKET =  "<";
+    private static final String RIGHT_BRACKET =  ">";
+    private static final String EMPTY_PLACE = "";
+    private static final String INTERVAL = " ";
+    private static final String LEFT_BRACKET_WITH_SLASH = "</";
+
     private RandomAccessFile randomAccessFile;
 
     @Override
@@ -56,14 +63,14 @@ public class XMLDAOImpl implements XMLDAO {
         }
 
         startPosition = randomAccessFile.getFilePointer();
-        name = firstLine.replaceAll("<", "").replaceAll(">", "");
+        name = firstLine.replaceAll(LEFT_BRACKET, EMPTY_PLACE).replaceAll(RIGHT_BRACKET, EMPTY_PLACE);
         startTag = firstLine;
 
-        String closeTagName = firstLine.replaceAll("<", "</");
+        String closeTagName = firstLine.replaceAll(LEFT_BRACKET, LEFT_BRACKET_WITH_SLASH);
 
         String s;
         while ((s = randomAccessFile.readLine()) != null) {
-            if (s.replaceAll(" ", "").equals(closeTagName.replaceAll(" ", ""))) {
+            if (s.replaceAll(INTERVAL, EMPTY_PLACE).equals(closeTagName.replaceAll(INTERVAL, EMPTY_PLACE))) {
                 endPosition = randomAccessFile.getFilePointer();
                 endTag = s;
             }
@@ -85,16 +92,16 @@ public class XMLDAOImpl implements XMLDAO {
         }
 
         Node childNode = new Node();
-        String name = "";
-        String startTag = "";
-        String endTag = "";
-        String attribute = "";
+        String name;
+        String startTag;
+        String endTag;
+        String attribute;
         NodeType nodeType;
-        String textContent = "";
-        long startPosition = 0;
+        String textContent;
+        long startPosition;
         long endPosition = 0;
         long nextLinePosition;
-        String nextTagLine = "";
+        String nextTagLine;
 
         randomAccessFile.seek(nodeStartPosition);
 
@@ -104,23 +111,25 @@ public class XMLDAOImpl implements XMLDAO {
 
         randomAccessFile.seek(startPosition);
 
-        StringBuilder textContentBuilder = new StringBuilder("");
+        StringBuilder textContentBuilder = new StringBuilder(EMPTY_PLACE);
 
         nodeType = XMLDAOUtil.checkNodeType(startTag);
 
         if (nodeType == NodeType.START_NODE) {
-            textContentBuilder.append(startTag.substring(startTag.indexOf(">")+1).trim());
-            startTag = startTag.substring(0,startTag.indexOf(">")+1);
+            textContentBuilder.append(startTag.substring(startTag.indexOf(RIGHT_BRACKET)+1).trim());
+            startTag = startTag.substring(0,startTag.indexOf(RIGHT_BRACKET)+1);
         }
 
-        startTag = startTag.substring(startTag.indexOf("<"));
-        attribute = startTag.replace(name, "").replace("<", "").replace(">", "");
-        endTag = startTag.replace("<", "</").split(" ")[0];
-        name = endTag.split(">")[0].replace("</", "");
-        if (!endTag.contains(">")) {
-            endTag = endTag + ">";
+        startTag = startTag.substring(startTag.indexOf(LEFT_BRACKET));
+        endTag = startTag.replace(LEFT_BRACKET, LEFT_BRACKET_WITH_SLASH).split(EMPTY_PLACE)[0];
+        name = endTag.split(RIGHT_BRACKET)[0].replace(LEFT_BRACKET_WITH_SLASH, EMPTY_PLACE);
+        attribute = startTag.replace(name, EMPTY_PLACE).replace(LEFT_BRACKET, EMPTY_PLACE).replace(RIGHT_BRACKET, EMPTY_PLACE);
+
+
+        if (!endTag.contains(RIGHT_BRACKET)) {
+            endTag = endTag + RIGHT_BRACKET;
         }
-        endTag = endTag.substring(0,endTag.indexOf(">")+1);
+        endTag = endTag.substring(0,endTag.indexOf(RIGHT_BRACKET)+1);
 
         if (nodeType == NodeType.START_NODE) {
             String s;
@@ -130,8 +139,8 @@ public class XMLDAOImpl implements XMLDAO {
                             XMLDAOUtil.checkNodeType(nextTagLine) == NodeType.TEXT_NODE) {
                         textContentBuilder.append(s.trim());
                     }
-                    if (s.replaceAll(" ", "").contains(endTag)) {
-                        textContentBuilder.append(" " + (s.replace(endTag,"").trim()));
+                    if (s.replaceAll(INTERVAL, EMPTY_PLACE).contains(endTag)) {
+                        textContentBuilder.append(INTERVAL + (s.replace(endTag,EMPTY_PLACE).trim()));
                         endPosition = randomAccessFile.getFilePointer();
                         break;
                     }
@@ -143,11 +152,11 @@ public class XMLDAOImpl implements XMLDAO {
 
         if (nodeType == NodeType.FILL_NODE) {
             endPosition = startPosition;
-            textContent = startTag.substring(startTag.indexOf(">") + 1).split("</")[0];
-            attribute = "";
+            textContent = startTag.substring(startTag.indexOf(RIGHT_BRACKET) + 1).split(LEFT_BRACKET_WITH_SLASH)[0];
+            attribute = EMPTY_PLACE;
         }
 
-        startTag = startTag.substring(0, startTag.indexOf(">")+1);
+        startTag = startTag.substring(0, startTag.indexOf(RIGHT_BRACKET)+1);
         randomAccessFile.readLine();
         nextLinePosition = randomAccessFile.getFilePointer();
 

@@ -10,6 +10,8 @@ public class XMLDAOUtil {
     private static final Pattern PATTERN_EMPTY = Pattern.compile("\\s+<.+/>");
     private static final Pattern PATTERN_START = Pattern.compile("\\s*<.+>\\s*");
     private static final Pattern PATTERN_FILL = Pattern.compile("\\s*<.+>.*</.+>");
+    private static final String LEFT_BRACKET =  "<";
+    private static final String RIGHT_BRACKET =  ">";
 
     public static NodeType checkNodeType(String s) {
 
@@ -27,7 +29,7 @@ public class XMLDAOUtil {
         if (matcherFill.lookingAt()) {
             return NodeType.FILL_NODE;
         }
-        if (!s.contains("<") && !s.contains(">")) {
+        if (!s.contains(LEFT_BRACKET) && !s.contains(RIGHT_BRACKET)) {
             return NodeType.TEXT_NODE;
         }
         if (matcherStart.lookingAt()) {

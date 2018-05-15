@@ -8,16 +8,17 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.net.URL;
 
 public class DocumentBuilder {
+
     private static final Logger LOGGER = LogManager.getLogger(DocumentBuilder.class);
     private static final DocumentBuilder DOCUMENT_BUILDER = new DocumentBuilder();
     private static final ClassLoader CLASS_LOADER = XMLDAOFactory.class.getClassLoader();
     private static final XMLDAOFactory XMLDAO_FACTORY = XMLDAOFactory.getInstance();
     private static final XMLDAO XMLDAO = XMLDAO_FACTORY.getXmlDAO();
-    private static Document document;
+
+    private Document document;
     private URL filePath;
 
     private DocumentBuilder() {

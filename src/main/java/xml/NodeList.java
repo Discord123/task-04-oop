@@ -1,10 +1,13 @@
 package xml;
 
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NodeList {
+public class NodeList implements Serializable{
+
+    private static final long serialVersionUID = 5336559750349168776L;
 
     private final List<Node> nodeList = new ArrayList<Node>();
     private URL filePath;
